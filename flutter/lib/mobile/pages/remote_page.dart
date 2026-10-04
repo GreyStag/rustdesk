@@ -24,6 +24,8 @@ import '../../models/platform_model.dart';
 import '../../utils/image.dart';
 import '../widgets/dialog.dart';
 import '../widgets/custom_scale_widget.dart';
+import '../../custom/custom_remote_overlay.dart';
+import '../../custom/custom_settings.dart';
 
 final initText = '1' * 1024;
 
@@ -60,7 +62,7 @@ class RemotePage extends StatefulWidget {
 
 class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
   Timer? _timer;
-  bool _showBar = !isWebDesktop;
+  bool _showBar = !isWebDesktop && !CustomSettings.customUi;
   bool _showGestureHelp = false;
   String _value = '';
   Orientation? _currentOrientation;
@@ -433,7 +435,9 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
     });
   }
 
-  Widget _bottomWidget() => _showGestureHelp
+  Widget _bottomWidget() => CustomSettings.customUi
+      ? Offstage()
+      : _showGestureHelp
       ? getGestureHelp()
       : (_showBar && gFFI.ffiModel.pi.displays.isNotEmpty
           ? getBottomAppBar()
@@ -447,6 +451,7 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
 
     return WillPopScope(
       onWillPop: () async {
+        await CustomRemoteOverlay.beforeClose(gFFI);
         clientClose(sessionId, gFFI);
         return false;
       },
@@ -455,7 +460,7 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
           floatingActionButtonLocation: keyboardIsVisible
               ? FABLocation(FloatingActionButtonLocation.endFloat, 0, -35)
               : null,
-          floatingActionButton: !showActionButton
+          floatingActionButton: (!showActionButton || CustomSettings.customUi)
               ? null
               : FloatingActionButton(
                   mini: !keyboardIsVisible,
@@ -519,7 +524,12 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
                                 color: MyTheme.canvasColor,
                                 child: inputModel.isPhysicalMouse.value
                                     ? getBodyForMobile()
-                                    : RawTouchGestureDetectorRegion(
+                                    : CustomSettings.customUi
+                                        ? CustomRemoteOverlay(
+                                        ffi: gFFI,
+                                        id: widget.id,
+                                        body: getBodyForMobile())
+                                        : RawTouchGestureDetectorRegion(
                                         child: getBodyForMobile(),
                                         ffi: gFFI,
                                       ),
@@ -661,11 +671,13 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
         child: Stack(children: () {
           final paints = [
             ImagePaint(ffiModel: gFFI.ffiModel),
+            if (!CustomSettings.customUi)
             Positioned(
               top: 10,
               right: 10,
               child: QualityMonitor(gFFI.qualityMonitorModel),
             ),
+            if (!CustomSettings.customUi)
             KeyHelpTools(
                 keyboardIsVisible: keyboardIsVisible,
                 showGestureHelp: _showGestureHelp),
@@ -703,7 +715,8 @@ class _RemotePageState extends State<RemotePage> with WidgetsBindingObserver {
           if (showCursorPaint) {
             paints.add(CursorPaint(widget.id));
           }
-          if (gFFI.ffiModel.touchMode) {
+          if (CustomSettings.customUi) {
+          } else if (gFFI.ffiModel.touchMode) {
             paints.add(FloatingMouse(
               ffi: gFFI,
             ));

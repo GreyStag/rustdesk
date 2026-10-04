@@ -34,7 +34,7 @@ import androidx.annotation.RequiresApi
 import org.json.JSONArray
 import org.json.JSONObject
 import com.hjq.permissions.XXPermissions
-import io.flutter.embedding.android.FlutterActivity
+import io.flutter.embedding.android.FlutterFragmentActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodChannel
 import kotlin.concurrent.thread
@@ -43,7 +43,7 @@ import java.io.FileInputStream
 import java.io.FileOutputStream
 
 
-class MainActivity : FlutterActivity() {
+class MainActivity : FlutterFragmentActivity() {
     companion object {
         var flutterMethodChannel: MethodChannel? = null
         private var _rdClipboardManager: RdClipboardManager? = null
@@ -53,6 +53,8 @@ class MainActivity : FlutterActivity() {
 
     private val channelTag = "mChannel"
     private val logTag = "mMainActivity"
+    private val activity: Activity get() = this
+    private val context: Context get() = this
     private var mainService: MainService? = null
     private sealed class PendingPicker {
         data class ImportFiles(val result: MethodChannel.Result) : PendingPicker()

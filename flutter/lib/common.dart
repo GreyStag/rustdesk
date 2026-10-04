@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'custom/security/pin_gate.dart';
 import 'dart:convert';
 import 'dart:math';
 
@@ -2580,6 +2581,7 @@ connect(BuildContext context, String id,
     String? connToken,
     bool? isSharedPassword}) async {
   if (id == '') return;
+  if (isMobile && !isWeb && !await CustomPinGate.verify(context)) return;
   if (!isDesktop || desktopType == DesktopType.main) {
     try {
       if (Get.isRegistered<IDTextEditingController>()) {

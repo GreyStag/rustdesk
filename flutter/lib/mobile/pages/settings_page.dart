@@ -21,6 +21,7 @@ import '../widgets/deploy_dialog.dart';
 import '../widgets/dialog.dart';
 import 'home_page.dart';
 import 'scan_page.dart';
+import '../../custom/custom_settings_page.dart';
 
 class SettingsPage extends StatefulWidget implements PageShape {
   @override
@@ -748,6 +749,15 @@ class _SettingsState extends State<SettingsPage> with WidgetsBindingObserver {
             ],
           ),
         SettingsSection(title: Text(translate("Settings")), tiles: [
+          SettingsTile(
+              title: const Text('Spanreed'),
+              leading: const Icon(Icons.phone_android),
+              onPressed: (context) {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (_) => const CustomSettingsPage()));
+              }),
           if (!disabledSettings && !_hideNetwork && !_hideServer)
             SettingsTile(
                 title: Text(translate('ID/Relay Server')),
